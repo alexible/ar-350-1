@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR 350-1 Flashcards</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            /* For 3D flip effect */
+            width: 100%;
+            max-width: 600px;
+            /* Max width for readability */
+            height: 300px;
+            /* Fixed height for cards */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            /* Crucial: Make parent positioned for absolute children */
+            transform-style: preserve-3d;
+            /* Preserve 3D transform */
+            transition: transform 0.6s;
+            /* Smooth flip animation */
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow */
+            border-radius: 12px;
+            /* Rounded corners */
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+            /* Flip on Y-axis */
+        }
+
+        .flashcard-face {
+            position: absolute;
+            top: 0;
+            /* Ensure it starts at the top of its parent */
+            left: 0;
+            /* Ensure it starts at the left of its parent */
+            width: 100%;
+            /* Ensure it fills the width of its parent */
+            height: 100%;
+            /* Ensure it fills the height of its parent */
+            backface-visibility: hidden;
+            /* Hide back face during flip */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+            background-color: #ffffff;
+            /* White background for cards */
+            border-radius: 12px;
+            /* Match container border-radius */
+            word-wrap: break-word;
+            /* Ensure text wraps */
+            overflow: auto;
+            /* Enable scrolling for long content */
+        }
+
+        .flashcard-front {
+            z-index: 2;
+            /* Ensure front is on top initially */
+            transform: rotateY(0deg);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+            /* Dark text */
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            /* Start rotated for back face */
+            font-size: 1.1rem;
+            color: #374151;
+            /* Slightly lighter dark text */
+            line-height: 1.6;
+        }
+
+        /* Navigation Button Styling */
+        .nav-button {
+            background-color: #4f46e5;
+            /* Indigo */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-button:hover {
+            background-color: #4338ca;
+            /* Darker indigo on hover */
+        }
+
+        .nav-button:disabled {
+            background-color: #9ca3af;
+            /* Gray for disabled */
+            cursor: not-allowed;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .flashcard-container {
+                height: 350px;
+                /* Taller on smaller screens */
+            }
+
+            .flashcard-front {
+                font-size: 1.25rem;
+            }
+
+            .flashcard-back {
+                font-size: 1rem;
+            }
+
+            .flashcard-face {
+                padding: 1.5rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex flex-col items-center gap-6 w-full max-w-2xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">AR 350-1: Army Training & Leader Development</h1>
+
+        <div class="flashcard-container">
+            <div id="flashcard" class="flashcard">
+                <div class="flashcard-face flashcard-front" id="flashcard-front"></div>
+                <div class="flashcard-face flashcard-back" id="flashcard-back"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between w-full mt-4 controls">
+            <button id="prevButton" class="nav-button">Previous</button>
+            <span id="cardCounter" class="text-lg font-medium text-gray-700">1 / 20</span>
+            <button id="nextButton" class="nav-button">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of flashcard data (front: term, back: definition)
+        const flashcards = [
+            {
+                front: "AR 350-1 Purpose",
+                back: "Outlines comprehensive policies, procedures, and responsibilities governing training and leader development across the U.S. Army, supporting decisive actions in unified land operations."
+            },
+            {
+                front: "Training Readiness",
+                back: "Standards for reporting training readiness, with a framework for the Training General Officer Steering Committee, Senior Leader Readiness Forum, and Senior Enlisted Training and Leader Development Conference."
+            },
+            {
+                front: "Deputy Chief of Staff, G-3/5/7 Authority",
+                back: "Codified authority for Headquarters, Department of the Army-level approval of all training requirements."
+            },
+            {
+                front: "Army University",
+                back: "Codified by the regulation; includes revisions on student dismissals, deferments, evaluation systems, and command team education."
+            },
+            {
+                front: "Select-Train-Educate-Promote (STEP)",
+                back: "New enlisted career management process highlighted in the regulation, emphasizing structured progression."
+            },
+            {
+                front: "Noncommissioned Officer Professional Development System (NCOPDS)",
+                back: "New framework for NCOPDS, including structured self-development, Master Leader Course, and Nominative Leaders Course."
+            },
+            {
+                front: "Civilian Education",
+                back: "Moved to a new Chapter 4 within the regulation, signifying its importance."
+            },
+            {
+                front: "Unit Training Records",
+                back: "Established in addition to existing individual training records, emphasizing collective unit readiness."
+            },
+            {
+                front: "Army Career Tracker (ACT)",
+                back: "A single aggregated source for assignment history, experience, skills, education, civilian acquired skills, interests, and extended relationships. A leader development tool."
+            },
+            {
+                front: "Training Domains",
+                back: "Training, education, and leader development actions are integrated within the Army culture, embracing values, ethics, the Warrior Ethos, standards, and enduring principles."
+            },
+            {
+                front: "Army Civilian Training, Education, and Development System (ACTEDS)",
+                back: "A requirements-based system ensuring planned development of civilians through work assignments, formal training, education, and self-development."
+            },
+            {
+                front: "Army Collective Task List",
+                back: "The total list of collective tasks within the Army from which mission essential tasks and supporting collective tasks are derived for unit METLs."
+            },
+            {
+                front: "Army Correspondence Course Program",
+                back: "An overall program governing Army correspondence courses, which are formal, non-digital, centrally managed self-study instructional materials."
+            },
+            {
+                front: "Army Leader Development Program (ALDP)",
+                back: "A TRADOC-led activity that executes Army leader development and is the sole management process for program execution."
+            },
+            {
+                front: "Education (Definition)",
+                back: "A structured process to impart knowledge through teaching and learning, predominantly in the Institutional and Self-Development Training Domains, to enable or enhance an individual's ability to perform in unknown situations."
+            },
+            {
+                front: "Initial Military Training (IMT)",
+                back: "The training conducted for new recruits to the Army."
+            },
+            {
+                front: "New Equipment Training (NET)",
+                back: "Training designed to prepare personnel to operate and maintain new or modified equipment."
+            },
+            {
+                front: "Self-development training",
+                back: "Planned, goal-oriented learning that reinforces and expands an individual’s knowledge base, self-awareness, and situational awareness."
+            },
+            {
+                front: "Senior Commander",
+                back: "The senior Army leader designated on an installation, responsible for rating the garrison commander, serving as the principal customer advocate, and representing the Army to the community."
+            },
+            {
+                front: "Training (Definition)",
+                back: "Builds confidence and competence, providing essential skills and knowledge, resulting in unit readiness. Unit commanders are responsible for scheduling and conducting training."
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        const flashcardElement = document.getElementById('flashcard');
+        const flashcardFront = document.getElementById('flashcard-front');
+        const flashcardBack = document.getElementById('flashcard-back');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const cardCounter = document.getElementById('cardCounter');
+
+        // Function to update the card content
+        function updateCardContent() {
+            flashcardFront.textContent = flashcards[currentCardIndex].front;
+            flashcardBack.textContent = flashcards[currentCardIndex].back;
+            cardCounter.textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
+            updateButtonStates();
+        }
+
+        // Function to flip the card
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcardElement.classList.add('flipped');
+            } else {
+                flashcardElement.classList.remove('flipped');
+            }
+        }
+
+        // Function to navigate to the previous card
+        function showPreviousCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                isFlipped = false; // Reset flip state for new card
+                flashcardElement.classList.remove('flipped');
+                // Use a timeout to allow flip animation to complete before content changes
+                setTimeout(updateCardContent, 300);
+            }
+        }
+
+        // Function to navigate to the next card
+        function showNextCard() {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                isFlipped = false; // Reset flip state for new card
+                flashcardElement.classList.remove('flipped');
+                // Use a timeout to allow flip animation to complete before content changes
+                setTimeout(updateCardContent, 300);
+            }
+        }
+
+        // Function to update button disabled states
+        function updateButtonStates() {
+            prevButton.disabled = (currentCardIndex === 0);
+            nextButton.disabled = (currentCardIndex === flashcards.length - 1);
+        }
+
+        // Event Listeners
+        flashcardElement.addEventListener('click', flipCard);
+        prevButton.addEventListener('click', showPreviousCard);
+        nextButton.addEventListener('click', showNextCard);
+
+        // Initialize the first card on load
+        window.onload = function () {
+            updateCardContent();
+        };
+    </script>
+</body>
+
+</html>
